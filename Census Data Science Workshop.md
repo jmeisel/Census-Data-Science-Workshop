@@ -8,7 +8,13 @@ Gitter Channel
 
 ### Exercise:  Demonstrate North Dakota's Demographic Changes Due to Fracking
 
-Contributed by Ari Lamstein, author of free email course Learn to Map Census Data in R.  Sign up for Ari's course [here](http://www.arilamstein.com/free-course/). 
+* This exercise was contributed by Ari Lamstein, author of free email course Learn to Map Census Data in R.  Sign up for Ari's course [here](http://www.arilamstein.com/free-course/).
+* The Census dataset used in this exercise is the American Community Survey.  The R package to provide access to the American Community Survey is called "acs" from author Ezra Haber Glenn.   
+
+####Overview
+North Dakota has been being transformed by the fracking boom. North Dakota sits on the Bakken formation which, due to fracking, is now able to be monetized.
+
+In this exercise, you will create two maps which demonstrate North Dakota’s recent demographic changes. The first shows that between 2010 and 2013 North Dakota’s Per Capita Income grew at a rate of 15%, significantly above any other US state. The second one shows that North Dakota’s Median Age decreased by 2%, significantly below any other US state. The following steps describe how to create these maps in R.
 
 ####Step 1: Install and Load the Necessary Packages
 
@@ -62,52 +68,66 @@ colnames(demo_all)
 
 The 2010 values now have .x appended to them, and the 2013 values have .y appended to them.
 
+####Step 4: Map the Percentage Change for Per Capita Income
 
-If you're new to CartoDB, **making an account is easy.** Just click [THIS LINK](http://goo.gl/forms/PfhLNxXidL) and follow the instructions. These accounts are a level-up from our standard free accounts because we <3 you!
+We’ll use the function state_choropleth to create choropleth maps of the demographic changes. First we need to create a column called value which represents the percent change in Per Capita Income between the two years:
 
-#### Welcome to your CartoDB Dashboard!
+```
+demo_all$value = (demo_all$per_capita_income.y - demo_all$per_capita_income.x) / demo_all$per_capita_income.x * 100
+```
 
-**The Dasboard** is like the command center for managing your datasets, maps, and account.
+Now we can create the map:
 
-![Dashboard](http://i62.tinypic.com/bgr9et.png)
+```
+state_choropleth(demo_all)
+```
 
-The blue bar on top allows you to:
-* Navigate between your maps and datasets
-  * Datasets are the backbone of your map visualization. It is important to note that by switching to the **datasets view**, you can work with the data stored on the CartoDB database directly.
-* Visit our [CartoDB gallery](https://cartodb.com/gallery/)
-* Learn new skills on our [documentation page](http://docs.cartodb.com/).
+The main problem with this map is the scale: it does not allow us to distinguish between negative and positive values. A more appropriate scale is scale_fill_gradient2: it makes 0 white, negative values red and positive values blue. To change the scale we need to use the object oriented features of choroplethr. Here is code to change the scale as well as do other things, such as remove the state labels.
 
+```
+choro = StateChoropleth$new(demo_all)
+choro$title = "State Per Capita Income\n2010-2013 Percent Change"
+min = min(demo_all$value)
+max = max(demo_all$value)
+choro$show_labels = FALSE
+choro$set_num_colors(1)
+choro$ggplot_scale = scale_fill_gradient2(name="Percent Change", limits = c(min, max))
+income_map = choro$render()
+income_map
+```
 
-By clicking the icon on the far right you can:
-* Manage your **account settings**
-* Visit your **public profile**
-* View your **API key**
-  * Which will be important for using our APIs and some external tools such as OGR.
+####Step 5: Map the Percentage Change for Median Age
 
-![image](http://i61.tinypic.com/16mnbt.png)
+We can create a similar map for changes in the median age using the same pattern:
+```
+demo_all$value = (demo_all$median_age.y - demo_all$median_age.x) / demo_all$median_age.x * 100
+choro = StateChoropleth$new(demo_all)
+choro$title = "State Median Age\n2010-2013 Percent Change"
+choro$set_num_colors(1)
+min = min(demo_all$value)
+max = max(demo_all$value)
+choro$show_labels = FALSE
+choro$ggplot_scale = scale_fill_gradient2(name="Percent Change", limits=c(min, max))
+age_map = choro$render()
+age_map
+```
 
-### Time to make our first map!
+####Step 6: Merge the Maps
 
-Let's begin by clicking the **green New Map button**. Then choosing to **Make a map from scratch** in the popup.
+Finally, we can merge the two maps using the gridExtra package:
 
-![button](http://i60.tinypic.com/242ty7k.png)
+```
+library(gridExtra)
+grid.arrange(income_map, age_map)
+```
 
-
-
+## Resources
 <ol>
-  <li><a href="http://academy.cartodb.com">Map Academy</a>
+  <li><a href="https://uscensusbureau.github.io/citysdk/">CitySDK on Github from the US Census Bureau</a></li>
+  <li><a href="http://www.arilamstein.com/free-course/">Email Course "Learn to Map Census Data in R" by Ari Lamstein</a>
     <ul>
-      <li><a href="http://academy.cartodb.com/courses/01-beginners-course.html">Beginner</a></li>
-      <li><a href="http://academy.cartodb.com/courses/02-design-for-beginners.html">Map design</a></li>
-      <li><a href="http://academy.cartodb.com/courses/03-cartodbjs-ground-up/lesson-3.html">CartoDB.js</a> – build a web app to visualize your data, allowing for more user interaction</li>
-      <li><a href="http://academy.cartodb.com/courses/04-sql-postgis.html">SQL and PostGIS</a> – slice and dice your geospatial data</li>
     </ul>
   </li>
-  <li><a href="http://docs.cartodb.com/tutorials.html">CartoDB Tutorials</a></li>
-  <li><a href="http://docs.cartodb.com/cartodb-editor.html">CartoDB Editor Documentation</a></li>
-  <li><a href="http://docs.cartodb.com/cartodb-platform.html">CartoDB APIs</a></li>
-  <li><a href="http://gis.stackexchange.com/questions/tagged/cartodb">Community help on StackExchange</a></li>
-  <li><a href="http://cartodb.com/gallery/">CartoDB Map Gallery</a></li>
 </ol>
 
 
