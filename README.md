@@ -2,7 +2,7 @@
 
 This repo has workshop materials for OSDC East in Boston, May 20th - May 22nd 2016.  
 
-Census datasets and tools covered:  CitySDK, The Opportunity Project, LEHD, American Community Survey, CartoDB, Tableau, R, Python
+Census datasets and tools covered:  CitySDK, The Opportunity Project, LEHD, American Community Survey, CartoDB, R, Python
 
 Exercise are viewable in the Wiki site section.
 
